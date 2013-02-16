@@ -10,6 +10,11 @@ Practical use cases include routing over a given gateway traffic for particular
 web services or webpages that do not have a priori predictable IP addresses and
 instead rely on dizzying arrays of DNS resolutions.
 
+#### Upstream Dnsmasq Support
+
+***This functionality has now been [written directly into `dnsmasq`](http://thekelleys.org.uk/gitweb/?p=dnsmasq.git;a=commit;h=13d86c7372e01392d1e3af7c90312b49e2a5c15d), which should be much easier to use than this project. See the `--ipset` option.***
+
+
 ### Why?
 
 Some ISPs throttle connections to services like YouTube. Other times,
