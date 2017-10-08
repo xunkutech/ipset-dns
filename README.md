@@ -31,10 +31,11 @@ bandwidth and/or geo-availability.
 
 ### Usage
 
-    # ipset-dns name-of-ipset listening-port upstream-dns-server
+    # ipset-dns name-of-v4-ipset name-of-v6-ipset listening-port upstream-dns-server
 
 `ipset-dns` binds only to localhost. It will daemonize unless the `NO_DAEMONIZE`
-environment variable is set.
+environment variable is set. If either `name-of-v4-ipset` or `name-of-v6-ipset` are
+empty strings, then the ipset for the respective address family will not be utilized.
 
 ### Building
 
@@ -127,7 +128,7 @@ given by `dnsmasq`. Lastly, `SIGHUP` is sent to `dnsmasq` to flush its cache.
 
 ### License
 
-* Copyright (C) 2013 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+* Copyright (C) 2013, 2017 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
 
 DNS parsing code loosely based on uClibc's [resolv.c](http://git.uclibc.org/uClibc/tree/libc/inet/resolv.c):
 

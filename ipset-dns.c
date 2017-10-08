@@ -5,7 +5,7 @@
  * to a given netfilter ipset. It is designed to be used in conjunction with
  * dnsmasq's upstream server directive.
  *
- * Copyright (C) 2013 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2013, 2017 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  * DNS parsing code loosely based on uClibc's resolv.c:
  * Copyright (C) 1998 Kenneth Albanowski <kjahds@kjahds.com>, The Silver Hammer Group, Ltd.
  * Copyright (C) 1985, 1993 The Regents of the University of California. All Rights Reserved.
@@ -19,7 +19,7 @@
  * Make an ipset:
  *     # ipset -N youtube iphash
  * Start the ipset-dns server:
- *     # ipset-dns youtube 1919 8.8.8.8
+ *     # ipset-dns youtube "" 1919 8.8.8.8
  * Query a hostname:
  *     # host r4---bru02t12.c.youtube.com
  *     r4---bru02t12.c.youtube.com is an alias for r4.bru02t12.c.youtube.com.
@@ -307,19 +307,25 @@ int main(int argc, char *argv[])
 	struct timeval tv;
 	char msg[512];
 	char ip[INET6_ADDRSTRLEN];
-	char *ipset;
+	char *ipset4, *ipset6;
 	int listen_sock, upstream_sock;
 	int pos, i, size, af;
 	socklen_t len;
 	size_t received;
 	pid_t child;
 	
-	if (argc != 4) {
-		fprintf(stderr, "Usage: %s ipset port upstream\n", argv[0]);
+	if (argc != 5) {
+		fprintf(stderr, "Usage: %s ipv4-ipset ipv6-ipset port upstream\n", argv[0]);
 		return 1;
 	}
 
-	ipset = argv[1];
+	ipset4 = argv[1];
+	ipset6 = argv[2];
+
+	if (!*ipset4 && !*ipset6) {
+		fprintf(stderr, "At least one of ipv4-ipset and ipv6-ipset must be provided.\n");
+		return 1;
+	}
 
 	listen_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (listen_sock < 0) {
@@ -329,7 +335,7 @@ int main(int argc, char *argv[])
 
 	memset(&listen_addr, 0, sizeof(listen_addr));
 	listen_addr.sin_family = AF_INET;
-	listen_addr.sin_port = htons(atoi(argv[2]));
+	listen_addr.sin_port = htons(atoi(argv[3]));
 	listen_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	i = 1;
 	setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(i));
@@ -341,7 +347,7 @@ int main(int argc, char *argv[])
 	memset(&upstream_addr, 0, sizeof(upstream_addr));
 	upstream_addr.sin_family = AF_INET;
 	upstream_addr.sin_port = htons(53);
-	inet_aton(argv[3], &upstream_addr.sin_addr);
+	inet_aton(argv[4], &upstream_addr.sin_addr);
 	
 	/* TODO: Put all of the below code in several forks all listening on the same sock. */
 
@@ -434,8 +440,11 @@ int main(int argc, char *argv[])
 				continue;
 			}
 
+			if ((af == AF_INET && !*ipset4) || (af == AF_INET6 && !*ipset6))
+				continue;
+
 			printf("%s: %s\n", answer.dotted, ip);
-			if (add_to_ipset(ipset, answer.rdata, af) < 0)
+			if (add_to_ipset((af == AF_INET) ? ipset4 : ipset6, answer.rdata, af) < 0)
 				perror("add_to_ipset");
 		}
 		

@@ -32,7 +32,7 @@ routes 1 tun12
 routes 2 tun11
 
 killall ipset-dns 2>/dev/null
-ipset-dns youtube 39128 8.8.8.8
-ipset-dns netflix 39129 8.8.8.8
+ipset-dns youtube "" 39128 8.8.8.8
+ipset-dns netflix "" 39129 8.8.8.8
 
 killall -SIGHUP dnsmasq # Clear dnsmasq's cache
