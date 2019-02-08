@@ -313,6 +313,7 @@ int main(int argc, char *argv[])
 	socklen_t len;
 	size_t received;
 	pid_t child;
+	char delim[] = ":";
 	
 	if (argc != 5) {
 		fprintf(stderr, "Usage: %s ipv4-ipset ipv6-ipset port upstream\n", argv[0]);
@@ -332,11 +333,18 @@ int main(int argc, char *argv[])
 		perror("socket");
 		return 1;
 	}
-
+	
+	char *l_ip_port = strtok(argv[3], delim);
+	char *l_port = strtok(NULL, delim);
 	memset(&listen_addr, 0, sizeof(listen_addr));
 	listen_addr.sin_family = AF_INET;
-	listen_addr.sin_port = htons(atoi(argv[3]));
-	listen_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+	if (l_port != NULL) {
+		listen_addr.sin_port = htons(atoi(l_port));
+		inet_aton(l_ip_port, &listen_addr.sin_addr);
+	} else {
+		listen_addr.sin_port = htons(atoi(l_ip_port));
+		listen_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+	}
 	i = 1;
 	setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(i));
 	if (bind(listen_sock, (struct sockaddr *)&listen_addr, sizeof(listen_addr)) < 0) {
@@ -344,10 +352,16 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	
+	char *up_ip = strtok(argv[4], delim);
+	char *up_port = strtok(NULL, delim);
 	memset(&upstream_addr, 0, sizeof(upstream_addr));
 	upstream_addr.sin_family = AF_INET;
-	upstream_addr.sin_port = htons(53);
-	inet_aton(argv[4], &upstream_addr.sin_addr);
+	if (up_port != NULL) {
+		upstream_addr.sin_port = htons(atoi(up_port));
+	} else {
+		upstream_addr.sin_port = htons(53);
+	}
+	inet_aton(up_ip, &upstream_addr.sin_addr);
 	
 	/* TODO: Put all of the below code in several forks all listening on the same sock. */
 
