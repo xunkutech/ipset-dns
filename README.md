@@ -31,7 +31,7 @@ bandwidth and/or geo-availability.
 
 ### Usage
 
-    # ipset-dns name-of-v4-ipset name-of-v6-ipset listening-port upstream-dns-server
+    # ipset-dns name-of-v4-ipset name-of-v6-ipset [binding-address:]listening-port upstream-dns-server[:upstream-dns-server-port]
 
 `ipset-dns` binds only to localhost. It will daemonize unless the `NO_DAEMONIZE`
 environment variable is set. If either `name-of-v4-ipset` or `name-of-v6-ipset` are
@@ -59,7 +59,7 @@ Make an ipset:
 
 Start the `ipset-dns` server:
 
-	# ipset-dns youtube 1919 8.8.8.8
+	# ipset-dns youtube [127.0.0.1:]1919 8.8.8.8[:53]
 
 Query a hostname:
 
@@ -121,8 +121,8 @@ given by `dnsmasq`. Lastly, `SIGHUP` is sent to `dnsmasq` to flush its cache.
 	routes 2 tun11
 
 	killall ipset-dns 2>/dev/null
-	ipset-dns youtube 39128 8.8.8.8
-	ipset-dns netflix 39129 8.8.8.8
+	ipset-dns youtube [127.0.0.1:]39128 8.8.8.8[:53]
+	ipset-dns netflix [127.0.0.1:]39129 8.8.8.8[:53]
 
 	killall -SIGHUP dnsmasq
 

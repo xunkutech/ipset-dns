@@ -316,7 +316,7 @@ int main(int argc, char *argv[])
 	char delim[] = ":";
 	
 	if (argc != 5) {
-		fprintf(stderr, "Usage: %s ipv4-ipset ipv6-ipset port upstream\n", argv[0]);
+		fprintf(stderr, "Usage: %s ipv4-ipset ipv6-ipset [binding_address:]port upstream_address[:port]\n", argv[0]);
 		return 1;
 	}
 
